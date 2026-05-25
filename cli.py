@@ -62,7 +62,7 @@ BANNER = r"""
  ╚═╝     ╚═╝  ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚═════╝  ╚══╝╚══╝
 """
 
-TAGLINE = "⬡  Binary-level CVE patch verification for stripped OEM kernels  ⬡"
+TAGLINE = "Binary-level CVE patch verification for stripped OEM kernels"
 VERSION = "0.1.0"
 
 
@@ -74,11 +74,11 @@ def _print_banner() -> None:
 
     meta = Table.grid(padding=(0, 4))
     meta.add_row(
-        Text("◈ version", style="dim cyan"),
+        Text("version", style="dim cyan"),
         Text(VERSION, style="bold white"),
-        Text("◈ arch", style="dim cyan"),
+        Text("arch", style="dim cyan"),
         Text("arm64 / x86_64", style="bold white"),
-        Text("◈ cves", style="dim cyan"),
+        Text("cves", style="dim cyan"),
         Text("CVE-2022-20421  CVE-2023-0266  CVE-2022-2588", style="bold white"),
     )
     console.print(meta, justify="center")
@@ -93,17 +93,17 @@ def _print_banner() -> None:
 # Verdict colours & symbols
 # ---------------------------------------------------------------------------
 VERDICT_STYLE = {
-    "patched":       ("bold green",  "✔"),
-    "vulnerable":    ("bold red",    "✘"),
-    "inconclusive":  ("bold yellow", "◌"),
+    "patched":       ("bold green",  "[OK]"),
+    "vulnerable":    ("bold red",    "[!]"),
+    "inconclusive":  ("bold yellow", "[?]"),
 }
 
 RISK_STYLE = {
-    "critical": ("bold red",          "💀 CRITICAL"),
-    "high":     ("bold red",          "⚠  HIGH"),
-    "medium":   ("bold yellow",       "◆  MEDIUM"),
-    "low":      ("bold yellow",       "◇  LOW"),
-    "clean":    ("bold green",        "✔  CLEAN"),
+    "critical": ("bold red",          "CRITICAL"),
+    "high":     ("bold red",          "HIGH"),
+    "medium":   ("bold yellow",       "MEDIUM"),
+    "low":      ("bold yellow",       "LOW"),
+    "clean":    ("bold green",        "CLEAN"),
 }
 
 
@@ -113,14 +113,14 @@ RISK_STYLE = {
 def _load_fingerprints_dir(fingerprints: Path) -> Path:
     if not fingerprints.exists():
         err_console.print(
-            f"[bold red]✘  Fingerprints directory not found:[/bold red] {fingerprints}\n"
+            f"[bold red]Fingerprints directory not found:[/bold red] {fingerprints}\n"
             "   Pass [cyan]--fingerprints <path>[/cyan] or run from the project root."
         )
         raise typer.Exit(code=2)
     yamls = list(fingerprints.glob("*.yaml")) + list(fingerprints.glob("*.yml"))
     if not yamls:
         err_console.print(
-            f"[bold yellow]⚠  No YAML fingerprint files found in:[/bold yellow] {fingerprints}\n"
+            f"[bold yellow]No YAML fingerprint files found in:[/bold yellow] {fingerprints}\n"
             "   The scan will produce no results."
         )
     return fingerprints
@@ -190,7 +190,7 @@ def _build_summary_panel(summary) -> Panel:
 
     return Panel(
         grid,
-        title="[bold cyan]◈  Exposure Summary[/bold cyan]",
+        title="[bold cyan]Exposure Summary[/bold cyan]",
         border_style="cyan",
         padding=(1, 3),
     )
@@ -236,7 +236,7 @@ def scan(
     ),
 ):
     """
-    [bold cyan]◈  Scan[/bold cyan] a kernel binary for known unpatched CVEs.
+    [bold cyan]Scan[/bold cyan] a kernel binary for known unpatched CVEs.
 
     Extracts functions from the binary, normalises disassembly into an
     arch-agnostic IR, and matches against pre/post-patch signatures.
@@ -251,7 +251,7 @@ def scan(
         _print_banner()
 
     if output not in ("table", "json"):
-        err_console.print("[bold red]✘  --output must be 'table' or 'json'.[/bold red]")
+        err_console.print("[bold red]--output must be 'table' or 'json'.[/bold red]")
         raise typer.Exit(code=1)
 
     fp_dir = _load_fingerprints_dir(fingerprints)
@@ -260,52 +260,52 @@ def scan(
     try:
         KernelImage, FunctionDetector, Disassembler, PatchMatcher, ExposureCalculator = _import_core()
     except ImportError as exc:
-        err_console.print(f"[bold red]✘  Failed to import core modules:[/bold red] {exc}")
+        err_console.print(f"[bold red]Failed to import core modules:[/bold red] {exc}")
         err_console.print("   Run [cyan]poetry install[/cyan] to install dependencies.")
         raise typer.Exit(code=3)
 
     # ── Load binary ────────────────────────────────────────────────────────
     if not quiet:
-        console.print(f"[cyan]◈[/cyan]  Loading binary  [dim]{binary_path}[/dim]")
+        console.print(f"Loading binary  [dim]{binary_path}[/dim]")
 
     try:
         from core.exceptions import NotAnELFError, UnsupportedArchError
         image = KernelImage.from_file(binary_path)
     except NotAnELFError:
         err_console.print(
-            f"[bold red]✘  Not a valid ELF file:[/bold red] {binary_path}"
+            f"[bold red]Not a valid ELF file:[/bold red] {binary_path}"
         )
         raise typer.Exit(code=1)
     except UnsupportedArchError as exc:
         err_console.print(
-            f"[bold red]✘  Unsupported architecture:[/bold red] {exc}\n"
+            f"[bold red]Unsupported architecture:[/bold red] {exc}\n"
             "   Patch Shadow supports [cyan]arm64[/cyan] and [cyan]x86_64[/cyan] only."
         )
         raise typer.Exit(code=2)
     except FileNotFoundError:
-        err_console.print(f"[bold red]✘  File not found:[/bold red] {binary_path}")
+        err_console.print(f"[bold red]File not found:[/bold red] {binary_path}")
         raise typer.Exit(code=1)
 
     if not quiet:
-        console.print(f"[cyan]◈[/cyan]  Architecture    [bold white]{image.arch}[/bold white]")
-        console.print(f"[cyan]◈[/cyan]  .text size      [bold white]{len(image.text_data):,} bytes[/bold white]")
+        console.print(f"Architecture    [bold white]{image.arch}[/bold white]")
+        console.print(f".text size      [bold white]{len(image.text_data):,} bytes[/bold white]")
 
     # ── Detect functions ───────────────────────────────────────────────────
     if not quiet:
-        console.print(f"[cyan]◈[/cyan]  Detecting function boundaries …")
+        console.print("Detecting function boundaries...")
 
     detector   = FunctionDetector(image)
     boundaries = detector.detect()
 
     if not quiet:
-        console.print(f"[cyan]◈[/cyan]  Found [bold white]{len(boundaries)}[/bold white] candidate functions")
+        console.print(f"Found [bold white]{len(boundaries)}[/bold white] candidate functions")
 
     # ── Disassemble + match ────────────────────────────────────────────────
     disassembler = Disassembler(image)
     matcher      = PatchMatcher(fp_dir)
 
     if not quiet:
-        console.print(f"[cyan]◈[/cyan]  Scanning against [bold white]{len(matcher.fingerprints)}[/bold white] CVE fingerprint(s) …\n")
+        console.print(f"Scanning against [bold white]{len(matcher.fingerprints)}[/bold white] CVE fingerprint(s)...\n")
 
     results = []
     for boundary in boundaries:
@@ -356,7 +356,7 @@ def scan(
 
     # table output
     if not results:
-        console.print("[bold yellow]⚠  No CVE matches found.[/bold yellow]")
+        console.print("[bold yellow]No CVE matches found.[/bold yellow]")
         console.print("[dim]   Try lowering confidence thresholds in the YAML fingerprints.[/dim]\n")
         return
 
@@ -376,7 +376,7 @@ def list_cves(
     ),
 ):
     """
-    [bold cyan]◈  List[/bold cyan] all CVE fingerprints that Patch Shadow knows about.
+    [bold cyan]List[/bold cyan] all CVE fingerprints that Patch Shadow knows about.
     """
     _print_banner()
 
@@ -386,7 +386,7 @@ def list_cves(
 
     yamls = sorted(fp_dir.glob("*.yaml")) + sorted(fp_dir.glob("*.yml"))
     if not yamls:
-        console.print("[bold yellow]⚠  No fingerprint files found.[/bold yellow]")
+        console.print("[bold yellow]No fingerprint files found.[/bold yellow]")
         raise typer.Exit()
 
     tbl = Table(

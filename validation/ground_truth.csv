@@ -1,0 +1,6 @@
+binary_path,cve,expected_verdict,notes
+# Add rows in this format:
+# /path/to/kernel.elf,CVE-2022-20421,patched,Android 12 build
+# /path/to/kernel.elf,CVE-2022-20421,vulnerable,Android 11 unpatched
+# /path/to/kernel.elf,CVE-2023-0266,patched,upstream 6.2-rc3
+# /path/to/kernel.elf,CVE-2022-2588,vulnerable,vendor OEM unpatched
