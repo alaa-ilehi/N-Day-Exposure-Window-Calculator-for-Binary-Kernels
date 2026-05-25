@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env/
+
+# pytest
+.pytest_cache/
+.cache/
+
+# Coverage
+.coverage
+htmlcov/
+coverage.xml
+
+# Type checkers
+.mypy_cache/
+.ruff_cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Poetry
+poetry.lock
+
+# Kernel binaries (test artifacts, don't commit actual binaries)
+*.bin
+*.elf
+*.img
